@@ -58,16 +58,36 @@ service:
 
 # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
-  enabled: false
-  className: ""
-  annotations: {}
+  enabled: true
+  className: "alb"
+  annotations:
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+    # Báo cho controller biết đây là Ingress cho ALB
+    kubernetes.io/ingress.class: alb 
+    # Đặt tên nhóm chung, ví dụ: "do2506-group"
+    alb.ingress.kubernetes.io/group.name: alb-do2602-group 
+    # Cấu hình ALB là internet-facing (hoặc internal nếu bạn muốn nội bộ)
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    # Sử dụng IP target type (hiệu quả hơn, yêu cầu AWS CNI): ip or instance
+    alb.ingress.kubernetes.io/target-type: ip
+    # Chỉ định đường dẫn health check mới, ví dụ: /healthz hoặc /login
+    alb.ingress.kubernetes.io/healthcheck-path: /
+    # Tự động chuyển hướng HTTP sang HTTPS
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    # Chỉ định ARN của chứng chỉ SSL từ AWS Certificate Manager (ACM)
+    # Thay thế ARN này bằng ARN thực tế của bạn
+    #alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-west-2:123456789012:certificate/uuid-cua-ban
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-southeast-1:527055790396:certificate/227a8d05-eb92-4c74-9306-2f16b66b8916
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
-    - host: chart-example.local
+    - host: tvtien-bfms.do2602.click
       paths:
         - path: /
-          pathType: ImplementationSpecific
+          # pathType: ImplementationSpecific
+          pathType: Prefix # Đổi từ ImplementationSpecific sang Prefix
   tls: []
     # - secretName: chart-example-tls
     #   hosts:
